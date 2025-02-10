@@ -1,0 +1,57 @@
+version: '3'
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.6.2
+    environment:
+      - discovery.type=single-node
+      - ELASTIC_PASSWORD=changeme
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - esdata1:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+    networks:
+      - es-net
+    restart: always
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.6.2
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - ELASTICSEARCH_USERNAME=kibana_user
+      - ELASTICSEARCH_PASSWORD=apiux.2024
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
+    networks:
+      - es-net
+    restart: always
+
+  cerebro:
+    image: lmenezes/cerebro:0.9.2
+    environment:
+      - ES_HOST=elasticsearch
+      - ES_PORT=9200
+      - ES_USER=elastic
+      - ES_PASSWORD=changeme
+    ports:
+      - "9001:9000"
+    depends_on:
+      - elasticsearch
+    networks:
+      - es-net
+    restart: always
+
+networks:
+  es-net:
+    driver: bridge
+
+volumes:
+  esdata1:
+    driver: local
+
+
